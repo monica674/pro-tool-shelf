@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Text Generator — Multi‑Tool</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass: rgba(255,255,255,0.03)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071022 0%,#081827 100%);color:#e6eef6}
+    .wrap{max-width:980px;margin:36px auto;padding:20px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{width:54px;height:54px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042;box-shadow:0 6px 18px rgba(6,10,20,.6)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 22px rgba(2,6,12,.6);}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:14px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    textarea, input, select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;box-sizing:border-box;font-size:14px}
+    textarea{min-height:160px;resize:vertical}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+    button{background:linear-gradient(90deg,var(--accent),#60a5fa);border:none;color:#042;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .small{font-size:13px;color:var(--muted)}
+    .output{white-space:pre-wrap;background:rgba(255,255,255,0.02);padding:14px;border-radius:8px;min-height:200px;overflow:auto}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .chip{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
+    .history{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+    .history button{justify-content:flex-start}
+    .footer{margin-top:16px;color:var(--muted);font-size:13px}
+
+    @media (max-width:900px){.grid{grid-template-columns:1fr;}.logo{width:48px;height:48px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">AI</div>
+      <div>
+        <h1>AI Text Generator</h1>
+        <p class="lead">Quickly generate, refine, and copy text for your multi‑tool site. (Runs via your server-side API.)</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <label for="prompt">Prompt</label>
+        <textarea id="prompt" placeholder="Write a short product description for a bamboo toothbrush...">Write a short product description for a bamboo toothbrush that emphasizes sustainability and travel-friendly design.</textarea>
+
+        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+          <div style="flex:1">
+            <label for="model">Model</label>
+            <select id="model">
+              <option value="gpt-4o-mini">gpt-4o-mini</option>
+              <option value="gpt-4o">gpt-4o</option>
+              <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            </select>
+          </div>
+          <div style="width:120px">
+            <label for="temperature">Temperature</label>
+            <input id="temperature" type="number" min="0" max="1" step="0.1" value="0.7" />
+          </div>
+          <div style="width:120px">
+            <label for="max_tokens">Max tokens</label>
+            <input id="max_tokens" type="number" min="16" max="2000" step="1" value="200" />
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="generate">Generate</button>
+          <button id="clear" class="secondary">Clear</button>
+          <div style="margin-left:auto;text-align:right">
+            <div class="small">Status: <span id="status">idle</span></div>
+          </div>
+        </div>
+
+        <div class="footer">Tip: This UI expects a server endpoint at <code>/api/generate</code> which calls your AI provider. <strong>Don’t put API keys in client-side code.</strong></div>
+      </div>
+
+      <aside>
+        <div class="card">
+          <div class="meta" style="justify-content:space-between">
+            <div class="chip">Output</div>
+            <div style="display:flex;gap:8px">
+              <button id="copy" class="secondary">Copy</button>
+              <button id="download" class="secondary">Download</button>
+            </div>
+          </div>
+
+          <div id="output" class="output" aria-live="polite">Your generated text will appear here.</div>
+
+          <div class="history">
+            <label class="small">Recent prompts</label>
+            <div id="historyList"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // ---- Helper UI bits ----
+    const el = id => document.getElementById(id);
+    const status = el('status');
+    const output = el('output');
+    const promptEl = el('prompt');
+    const generateBtn = el('generate');
+    const copyBtn = el('copy');
+    const downloadBtn = el('download');
+    const historyList = el('historyList');
+
+    let history = JSON.parse(localStorage.getItem('ai_text_history') || '[]');
+    function renderHistory(){
+      historyList.innerHTML = '';
+      history.slice().reverse().forEach((h, idx)=>{
+        const b = document.createElement('button');
+        b.className = 'secondary';
+        b.style.width='100%';
+        b.style.padding='8px';
+        b.style.textAlign='left';
+        b.textContent = h.slice(0,120) + (h.length>120? '…' : '');
+        b.onclick = ()=>{ promptEl.value = h; window.scrollTo({top:0,behavior:'smooth'}); }
+        historyList.appendChild(b);
+      })
+    }
+    renderHistory();
+
+    function setStatus(s){ status.textContent = s; }
+
+    function saveHistory(p){ if(!p||!p.trim()) return; history.push(p); if(history.length>20) history.shift(); localStorage.setItem('ai_text_history', JSON.stringify(history)); renderHistory(); }
+
+    // ---- Core generate logic ----
+    async function generate(){
+      const prompt = promptEl.value.trim();
+      if(!prompt){ alert('Please enter a prompt'); return; }
+      const model = el('model').value;
+      const temperature = parseFloat(el('temperature').value) || 0.7;
+      const max_tokens = parseInt(el('max_tokens').value) || 200;
+
+      setStatus('sending…');
+      generateBtn.disabled = true;
+      output.textContent = '';
+
+      // POST to your server-side endpoint which holds the API key.
+      try{
+        const resp = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, model, temperature, max_tokens })
+        });
+
+        if(!resp.ok){
+          // helpful debug info
+          const txt = await resp.text();
+          throw new Error(`Server error ${resp.status}: ${txt}`);
+        }
+
+        // Expect JSON: { text: "..." }
+        const data = await resp.json();
+        if(typeof data.text !== 'string') throw new Error('Invalid response from server');
+        output.textContent = data.text;
+        saveHistory(prompt);
+        setStatus('done');
+      }catch(err){
+        console.error(err);
+        // Fallback: if server not available, simulate a quick reply so UI stays useful for demos.
+        if(err.message.includes('Failed to fetch') || err.message.includes('NetworkError')){
+          output.textContent = `Demo mode — no server detected.\n\nPrompt received:\n${prompt}\n\nExample reply:\nThis is a simulated response. Replace /api/generate with your server endpoint that calls your AI provider.\n`;
+          setStatus('demo');
+        }else{
+          output.textContent = 'Error: ' + err.message;
+          setStatus('error');
+        }
+      }finally{
+        generateBtn.disabled = false;
+      }
+    }
+
+    // ---- Copy & Download ----
+    copyBtn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(output.textContent);
+        setStatus('copied');
+        setTimeout(()=> setStatus('idle'), 1200);
+      }catch(e){ alert('Copy failed: ' + e.message); }
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      const blob = new Blob([output.textContent], {type:'text/plain;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ai-output.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
+    });
+
+    generateBtn.addEventListener('click', generate);
+    el('clear').addEventListener('click', ()=>{ promptEl.value=''; });
+
+    // Keyboard shortcut: Ctrl/Cmd+Enter to generate
+    promptEl.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ generate(); } });
+
+    // Accessibility: announce status changes for screen readers
+    const obs = new MutationObserver(()=>{/* no-op but keeps aria-live updated */});
+    obs.observe(status,{childList:true});
+
+  </script>
+</body>
+</html>
