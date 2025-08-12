@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pro Tool Shelf — Free Digital Tools</title>
+  <meta name="description" content="Pro Tool Shelf: 60 free web tools (AI + utilities). Fast, mobile-friendly, dark neon design. No signup.">
+  <!-- Adsense placeholder: Replace with your AdSense code where indicated -->
+
+  <style>
+    :root{
+      --bg:#0a0a0a; --card:#0f0f10; --neon:#00ff66; --muted:#9aa0a6; --glass: rgba(255,255,255,0.03);
+      --max-width:1100px;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:#e8f8ee;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+    a{color:var(--neon);text-decoration:none}
+
+    /* Header */
+    .site-wrap{max-width:var(--max-width);margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg, rgba(0,255,102,0.12), rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,255,102,0.06), inset 0 -6px 18px rgba(255,255,255,0.02)}
+    .logo h1{margin:0;font-size:18px;color:var(--neon);letter-spacing:0.6px}
+    .site-title{font-size:18px;margin:0}
+    .site-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+    /* Nav */
+    nav{display:flex;align-items:center;gap:12px}
+    .search{flex:1;max-width:520px;position:relative}
+    input.search-input{width:100%;padding:12px 44px 12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:var(--card);color:#e8f8ee;outline:none;font-size:14px}
+    .search .icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.7}
+
+    /* Categories */
+    .cats{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+    .cat{padding:8px 12px;border-radius:999px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px;cursor:pointer}
+    .cat.active{background:linear-gradient(90deg, rgba(0,255,102,0.06), rgba(255,255,255,0.01));border-color:rgba(0,255,102,0.14);color:var(--neon)}
+
+    /* Grid */
+    .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .tool-card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow: 0 6px 20px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:12px;min-height:140px}
+    .tool-item{display:flex;align-items:center;gap:12px}
+    .tool-icon{width:48px;height:48;border-radius:10px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;color:var(--neon);font-weight:700}
+    .tool-title{font-size:16px;margin:0}
+    .tool-desc{font-size:13px;color:var(--muted);margin-top:4px}
+
+    /* Neon button */
+    .wow-btn{background:var(--neon);color:#00120a;padding:10px 18px;border-radius:999px;border:none;font-weight:700;cursor:pointer;box-shadow:0 0 8px rgba(0,255,102,0.14), 0 0 20px rgba(0,255,102,0.06);position:relative;overflow:hidden}
+    .wow-btn:active{transform:scale(.99)}
+    .wow-btn::after{content:'';position:absolute;left:-60%;top:0;width:40%;height:100%;background:linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02));transform:skewX(-25deg);opacity:0;transition:all .6s ease}
+    .wow-btn:hover{transform:scale(1.03);box-shadow:0 0 18px rgba(0,255,102,0.3), 0 6px 28px rgba(0,255,102,0.05)}
+    .wow-btn:hover::after{left:120%;opacity:1}
+
+    /* Responsive */
+    @media(max-width:900px){.tools-grid{grid-template-columns:repeat(2,1fr)}.site-wrap{padding:16px}}
+    @media(max-width:600px){header{flex-direction:column;align-items:flex-start}nav{width:100%}.tools-grid{grid-template-columns:1fr}.logo{width:48px;height:48}.site-title{font-size:16px}}
+
+    /* Footer */
+    footer{margin-top:28px;padding:18px;border-top:1px solid rgba(255,255,255,0.02);color:var(--muted);font-size:13px}
+
+    /* Tool modal */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:140;opacity:0;pointer-events:none;transition:opacity .18s ease}
+    .modal.open{opacity:1;pointer-events:auto}
+    .modal-card{width:94%;max-width:880px;background:linear-gradient(180deg, #0b0b0b, #0d0d0d);border-radius:12px;padding:18px;border:1px solid rgba(0,255,102,0.06)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center}
+    .modal-body{margin-top:12px}
+    .input, textarea{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--card);color:#e8f8ee;resize:vertical}
+    .result{margin-top:12px;padding:12px;border-radius:8px;background:var(--glass);color:#e8f8ee;border:1px solid rgba(255,255,255,0.02);min-height:80px}
+
+    /* subtle animated neon header underline */
+    .brand .site-title::after{content:'';display:block;height:3px;width:0;background:linear-gradient(90deg,var(--neon),rgba(255,255,255,0.2));margin-top:6px;border-radius:8px;transition:width .6s ease}
+    header:hover .brand .site-title::after{width:60%}
+  </style>
+</head>
+<body>
+  <div class="site-wrap">
+    <header>
+      <div class="brand">
+        <div class="logo"><h1 style="font-size:12px">PTS</h1></div>
+        <div>
+          <div class="site-title">Pro Tool Shelf</div>
+          <div class="site-sub">60 free tools • AI + Utilities • No signup</div>
+        </div>
+      </div>
+
+      <div style="flex:1;display:flex;justify-content:flex-end;align-items:center;gap:12px">
+        <div class="search">
+          <input class="search-input" id="search" placeholder="Search tools (e.g., PDF, image, ai)" />
+          <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:.7"><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <!-- Replace with your Adsense header slot -->
+        <!-- <div class="ad-slot">AD-SLOT</div> -->
+      </div>
+    </header>
+
+    <nav>
+      <div class="cats" id="categories">
+        <button class="cat active" data-cat="all">All</button>
+        <button class="cat" data-cat="ai">AI Tools</button>
+        <button class="cat" data-cat="text">Text</button>
+        <button class="cat" data-cat="image">Image</button>
+        <button class="cat" data-cat="pdf">PDF</button>
+        <button class="cat" data-cat="dev">Developer</button>
+        <button class="cat" data-cat="calc">Utility</button>
+        <button class="cat" data-cat="sec">Security</button>
+        <button class="cat" data-cat="fun">Fun</button>
+      </div>
+    </nav>
+
+    <!-- tools grid -->
+    <main>
+      <section class="tools-grid" id="toolsGrid">
+        <!-- Tool cards injected by script -->
+      </section>
+    </main>
+
+    <footer>
+      Pro Tool Shelf — Built for speed and simplicity. • <a href="#">Privacy Policy</a> • <a href="#">Contact</a>
+    </footer>
+  </div>
+
+  <!-- Modal for tool UI -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle" style="margin:0">Tool</h3>
+          <div id="modalDesc" style="font-size:13px;color:var(--muted)"></div>
+        </div>
+        <div><button class="wow-btn" id="closeModal">Close</button></div>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- dynamic tool UI here -->
+        <div style="padding:12px;color:var(--muted)">Tool interface will appear here. Implement tool logic in JavaScript functions. Example placeholders are included in the template.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tools data (60 tools)
+    const tools = [
+      {id:1,cat:'ai',title:'AI Text Generator',desc:'Generate blog posts, captions and more.'},
+      {id:2,cat:'ai',title:'AI Image Generator',desc:'Create images from text prompts.'},
+      {id:3,cat:'ai',title:'AI Background Remover',desc:'Remove image backgrounds fast.'},
+      {id:4,cat:'ai',title:'AI Voice Generator',desc:'Create natural voice from text.'},
+      {id:5,cat:'ai',title:'AI Chatbot Assistant',desc:'Interactive assistant for quick answers.'},
+      {id:6,cat:'ai',title:'AI Paraphrasing Tool',desc:'Rephrase text while keeping meaning.'},
+      {id:7,cat:'ai',title:'AI Summarizer',desc:'Summarize long articles instantly.'},
+      {id:8,cat:'ai',title:'AI Headline Generator',desc:'Catchy titles for posts and ads.'},
+      {id:9,cat:'ai',title:'AI Email Writer',desc:'Write professional emails fast.'},
+      {id:10,cat:'ai',title:'AI Code Generator',desc:'Generate HTML/CSS/JS from short prompts.'},
+      {id:11,cat:'text',title:'Grammar Checker',desc:'Fix grammar and improve clarity.'},
+      {id:12,cat:'text',title:'Plagiarism Checker',desc:'Detect copied content.'},
+      {id:13,cat:'text',title:'Text-to-Speech Converter',desc:'Convert text into spoken audio.'},
+      {id:14,cat:'text',title:'Speech-to-Text Converter',desc:'Transcribe audio to text.'},
+      {id:15,cat:'text',title:'Word Counter',desc:'Count words and reading time.'},
+      {id:16,cat:'text',title:'Character Counter',desc:'Count characters quickly.'},
+      {id:17,cat:'text',title:'Case Converter',desc:'Uppercase, lowercase, title case.'},
+      {id:18,cat:'text',title:'Readability Score Checker',desc:'Flesch-Kincaid and other scores.'},
+      {id:19,cat:'text',title:'Random Text Generator',desc:'Dummy text for mockups.'},
+      {id:20,cat:'text',title:'Emoji Translator',desc:'Turn words into emoji sequences.'},
+      {id:21,cat:'image',title:'Image Compressor',desc:'Reduce file size while keeping quality.'},
+      {id:22,cat:'image',title:'Image Resizer',desc:'Resize images to custom dimensions.'},
+      {id:23,cat:'image',title:'Image to PDF Converter',desc:'Convert photos into PDF files.'},
+      {id:24,cat:'image',title:'Image to Text (OCR)',desc:'Extract text from images.'},
+      {id:25,cat:'image',title:'Image Cropper',desc:'Crop images online.'},
+      {id:26,cat:'image',title:'Image Color Picker',desc:'Get exact color codes from images.'},
+      {id:27,cat:'image',title:'Image Rotator',desc:'Rotate images easily.'},
+      {id:28,cat:'image',title:'Photo Filters & Effects',desc:'Apply quick filters to photos.'},
+      {id:29,cat:'pdf',title:'PDF to Word Converter',desc:'Convert PDF to editable Word.'},
+      {id:30,cat:'pdf',title:'Word to PDF Converter',desc:'Create PDFs from docs.'},
+      {id:31,cat:'pdf',title:'PDF Merger',desc:'Combine multiple PDFs.'},
+      {id:32,cat:'pdf',title:'PDF Splitter',desc:'Split PDFs by page ranges.'},
+      {id:33,cat:'pdf',title:'PDF Password Remover',desc:'Remove passwords from unlocked PDFs.'},
+      {id:34,cat:'pdf',title:'PDF Compressor',desc:'Shrink PDF files.'},
+      {id:35,cat:'pdf',title:'PDF Page Number Adder',desc:'Add page numbers to PDFs.'},
+      {id:36,cat:'dev',title:'HTML Formatter',desc:'Beautify and minify HTML.'},
+      {id:37,cat:'dev',title:'CSS Minifier',desc:'Minify CSS for production.'},
+      {id:38,cat:'dev',title:'JavaScript Beautifier',desc:'Format JS for readability.'},
+      {id:39,cat:'dev',title:'JSON Formatter & Validator',desc:'Validate and format JSON.'},
+      {id:40,cat:'dev',title:'Base64 Encoder/Decoder',desc:'Encode & decode base64 strings.'},
+      {id:41,cat:'dev',title:'RGB to HEX Converter',desc:'Color conversions for designers.'},
+      {id:42,cat:'dev',title:'Markdown to HTML Converter',desc:'Convert markdown to HTML.'},
+      {id:43,cat:'calc',title:'Currency Converter',desc:'Live rates (can integrate API).'},
+      {id:44,cat:'calc',title:'Unit Converter',desc:'Length, weight, volume and more.'},
+      {id:45,cat:'calc',title:'Age Calculator',desc:'Calculate exact age from DOB.'},
+      {id:46,cat:'calc',title:'BMI Calculator',desc:'Health BMI calculator.'},
+      {id:47,cat:'calc',title:'Loan Calculator',desc:'EMI and amortization.'},
+      {id:48,cat:'calc',title:'Percentage Calculator',desc:'Find percentages quickly.'},
+      {id:49,cat:'calc',title:'Date Difference Calculator',desc:'Days between two dates.'},
+      {id:50,cat:'calc',title:'Time Zone Converter',desc:'Convert time between zones.'},
+      {id:51,cat:'sec',title:'Password Generator',desc:'Create strong passwords.'},
+      {id:52,cat:'sec',title:'Password Strength Checker',desc:'Evaluate password strength.'},
+      {id:53,cat:'sec',title:'IP Address Finder',desc:'Get your IP and location info.'},
+      {id:54,cat:'sec',title:'URL Encoder/Decoder',desc:'Encode and decode URLs.'},
+      {id:55,cat:'sec',title:'MD5 Hash Generator',desc:'Generate MD5 hash.'},
+      {id:56,cat:'fun',title:'Random Name Generator',desc:'Names for characters and projects.'},
+      {id:57,cat:'fun',title:'Trivia Quiz Maker',desc:'Create short quizzes.'},
+      {id:58,cat:'fun',title:'Meme Generator',desc:'Make memes with captions.'},
+      {id:59,cat:'fun',title:'Countdown Timer',desc:'Create public countdowns.'},
+      {id:60,cat:'fun',title:'Spin the Wheel Game',desc:'Random prize wheel for fun.'}
+    ];
+
+    // render tools
+    const toolsGrid = document.getElementById('toolsGrid');
+    function renderTools(list){
+      toolsGrid.innerHTML = '';
+      list.forEach(t=>{
+        const card = document.createElement('article');
+        card.className='tool-card';
+        card.innerHTML = `
+          <div class="tool-item">
+            <div class="tool-icon">${t.title.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
+            <div style="flex:1">
+              <h4 class="tool-title">${t.title}</h4>
+              <div class="tool-desc">${t.desc}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+              <button class="wow-btn" data-id="${t.id}">Open</button>
+            </div>
+          </div>`;
+        toolsGrid.appendChild(card);
+      });
+    }
+    renderTools(tools);
+
+    // search + filter
+    const searchEl = document.getElementById('search');
+    searchEl.addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = tools.filter(t=> t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q));
+      renderTools(filtered);
+    });
+
+    // category filter
+    document.getElementById('categories').addEventListener('click', e=>{
+      const btn = e.target.closest('button'); if(!btn) return;
+      document.querySelectorAll('.cat').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      if(cat==='all') renderTools(tools); else renderTools(tools.filter(t=>t.cat===cat));
+    });
+
+    // open modal
+    document.body.addEventListener('click', e=>{
+      const btn = e.target.closest('button[data-id]'); if(!btn) return;
+      const id = +btn.dataset.id; const t = tools.find(x=>x.id===id);
+      openTool(t);
+    });
+
+    function openTool(tool){
+      document.getElementById('modalTitle').textContent = tool.title;
+      document.getElementById('modalDesc').textContent = tool.desc;
+      const body = document.getElementById('modalBody');
+      // Example UI scaffolding for different categories -- replace with actual tool logic
+      body.innerHTML = '';
+
+      if(tool.cat==='text'){
+        body.innerHTML = `
+          <textarea id="toolInput" placeholder="Paste text here" rows="6"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="wow-btn" id="runTool">Run</button><button class="wow-btn" id="clearTool">Clear</button></div>
+          <div class="result" id="result">Results will appear here.</div>`;
+        document.getElementById('runTool').addEventListener('click', ()=>{
+          const v = document.getElementById('toolInput').value;
+          document.getElementById('result').textContent = 'Output (preview):\n'+v.slice(0,300);
+        });
+        document.getElementById('clearTool').addEventListener('click', ()=>{document.getElementById('toolInput').value='';document.getElementById('result').textContent='';});
+      } else if(tool.cat==='ai'){
+        body.innerHTML = `
+          <textarea id="toolInputAI" placeholder="Enter prompt or text" rows="4"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="wow-btn" id="runAI">Run (Demo)</button></div>
+          <div class="result" id="result">AI results will appear here. Integrate your AI API key and call endpoints securely from a server.</div>`;
+        document.getElementById('runAI').addEventListener('click', ()=>{
+          const p = document.getElementById('toolInputAI').value;
+          // Demo fallback: simple echo + stylized text. Replace with API call.
+          document.getElementById('result').textContent = 'Demo preview for prompt:\n'+p.slice(0,600);
+        });
+      } else if(tool.cat==='image'){
+        body.innerHTML = `
+          <input type="file" id="imgFile" accept="image/*" />
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="wow-btn" id="processImg">Process</button></div>
+          <div class="result" id="result">Upload an image to use the tool.</div>`;
+        document.getElementById('processImg').addEventListener('click', ()=>{
+          const f = document.getElementById('imgFile').files[0];
+          if(!f){alert('Please choose an image.');return}
+          document.getElementById('result').textContent = 'Preview: file name '+f.name;
+        });
+      } else if(tool.cat==='pdf'){
+        body.innerHTML = `
+          <input type="file" id="pdfFile" accept="application/pdf" />
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="wow-btn" id="processPdf">Process PDF</button></div>
+          <div class="result" id="result">Select a PDF to process.</div>`;
+        document.getElementById('processPdf').addEventListener('click', ()=>{
+          const f = document.getElementById('pdfFile').files[0];
+          if(!f){alert('Choose a PDF');return}
+          document.getElementById('result').textContent = 'PDF selected: '+f.name;
+        });
+      } else if(tool.cat==='dev'){
+        body.innerHTML = `
+          <textarea id="codeInput" rows="8" placeholder="Paste code here"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="wow-btn" id="formatCode">Format / Minify</button></div>
+          <div class="result" id="result">Formatted code appears here.</div>`;
+        document.getElementById('formatCode').addEventListener('click', ()=>{
+          const v = document.getElementById('codeInput').value;
+          // naive formatting demo
+          document.getElementById('result').textContent = v.replace(/\t/g,'  ').slice(0,2000);
+        });
+      } else if(tool.cat==='calc' || tool.cat==='sec' || tool.cat==='fun'){
+        body.innerHTML = `
+          <div style="padding:8px;color:var(--muted)">This tool's interactive UI should be implemented here. Use small JS modules to keep pages fast.</div>`;
+      } else {
+        body.innerHTML = `<div class="result">Tool UI not implemented yet.</div>`;
+      }
+
+      document.getElementById('modal').classList.add('open');
+    }
+
+    // close modal
+    document.getElementById('closeModal').addEventListener('click', ()=>{document.getElementById('modal').classList.remove('open');});
+    document.getElementById('modal').addEventListener('click', e=>{if(e.target.id==='modal') document.getElementById('modal').classList.remove('open');});
+
+    // Accessibility: keyboard close
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('modal').classList.remove('open'); });
+
+    // Note for Blogger: paste this entire file into Theme → Edit HTML or create a new page and switch to HTML view.
+    // Adsense: add your ad code snippets where indicated. Make sure to follow AdSense site policies and place ad units into allowed positions.
+
+  </script>
+</body>
+</html>
